@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 *.txt
+.httr-oauth
+.DS_Store
+.quarto

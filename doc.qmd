@@ -1,0 +1,103 @@
+---
+title: "advent of code - 2025"
+format: html
+---
+
+```{r}
+library(here)
+library(tidyverse)
+```
+
+# DAY 1
+
+## PUZZLE 1
+
+### TEST
+
+```{r}
+test1 <- read_lines(here("day1_test1")) |> 
+        as_tibble() |> 
+        separate_wider_position(value, c(direction = 1, unit = 2), too_few = "align_start") |>
+        mutate(unit = as.numeric(unit)) |>
+        mutate(move = case_when(direction == "L" ~ -unit,
+                                    TRUE ~ unit)) |>
+        mutate(moved_to = 50 + cumsum(move)) |>
+        mutate(moved_to2 = case_when(moved_to < 0 ~ as.numeric(str_sub(moved_to + 100, -2)), 
+                                        moved_to > 100 ~ as.numeric(str_sub(moved_to, -2)), TRUE ~ moved_to))
+
+password <- test1 |> filter(moved_to2 == 0) |> nrow()
+```
+
+### PUZZLE
+
+```{r}
+puzzle1 <- read_lines(here("day1_puzzle1")) |> 
+        as_tibble() |> 
+        separate_wider_position(value, c(direction = 1, unit = 5), too_few = "align_start") |>
+        mutate(unit = as.numeric(unit)) |>
+        mutate(move = case_when(direction == "L" ~ -unit,
+                                    TRUE ~ unit)) |>
+        mutate(moved_to = 50 + cumsum(move)) |>
+        mutate(moved_to2 = case_when(moved_to < 0 ~ as.numeric(str_sub(moved_to + 100, -2)), 
+                                        moved_to >= 100 ~ as.numeric(str_sub(moved_to, -2)), TRUE ~ moved_to))
+
+puzzle1 |> summarise(min(moved_to2), max(moved_to2))
+
+password <- puzzle1 |> filter(moved_to2 == 0) |> nrow()
+```
+
+## PUZZLE 2
+
+### TEST
+
+```{r}
+test1 <- read_lines(here("day1_test1")) |> 
+        as_tibble() |> 
+        separate_wider_position(value, c(direction = 1, unit = 2), too_few = "align_start") |>
+        mutate(unit = as.numeric(unit)) |>
+        mutate(move = case_when(direction == "L" ~ -unit,
+                                    TRUE ~ unit)) |>
+        mutate(moved_to = 50 + cumsum(move)) |>
+        mutate(moved_to2 = case_when(moved_to < 0 ~ as.numeric(str_sub(moved_to + 100, -2)), 
+                                        moved_to > 100 ~ as.numeric(str_sub(moved_to, -2)), TRUE ~ moved_to)) |>
+        mutate(start = case_when(row_number() == 1 ~50, TRUE ~lag(moved_to2))) |>
+        mutate(check = case_when(start <= moved_to2 & direction == "R" & unit > 50 & row_number() == 1 ~ 1,
+                                start <= moved_to2 & direction == "R" & unit > 100 ~ 1,
+                                start >= moved_to2 & direction == "L" & unit > 50 & row_number() == 1 ~ 1,
+                                start >= moved_to2 & direction == "L" & unit > 100 ~ 1,
+                                start <= moved_to2 & direction == "L" ~ 1,
+                                start >= moved_to2 & direction == "R" ~ 1))
+
+password <- test1 |> filter(check == 1) |> nrow()
+```
+
+### PUZZLE
+
+```{r}
+puzzle2 <- read_lines(here("day1_puzzle1")) |> 
+        as_tibble() |> 
+        separate_wider_position(value, c(direction = 1, unit = 5), too_few = "align_start") |>
+        mutate(unit = as.numeric(unit)) |>
+        mutate(move = case_when(direction == "L" ~ -unit,
+                                    TRUE ~ unit)) |>
+        mutate(moved_to = 50 + cumsum(move)) |>
+        mutate(moved_to = case_when(moved_to == 100 ~ 0, TRUE ~ moved_to)) |>
+        mutate(moved_to2 = case_when(moved_to < 0 ~ as.numeric(str_sub(moved_to + 100, -2)), 
+                                        moved_to > 100 ~ 100 - as.numeric(str_sub(moved_to, -2)), TRUE ~ moved_to))|>
+        mutate(moved_to2 = case_when(moved_to2 == 100 ~ 0, TRUE ~ moved_to2)) |>
+        mutate(start = case_when(row_number() == 1 ~ 50, TRUE ~lag(moved_to2))) |>
+        mutate(check = case_when(start <= moved_to2 & direction == "R" & unit >= 50 & row_number() == 1 ~ 1,
+                                start <= moved_to2 & direction == "R" & unit >= 100 ~ 1,
+                                start >= moved_to2 & direction == "L" & unit >= 50 & row_number() == 1 ~ 1,
+                                start >= moved_to2 & direction == "L" & unit >= 100 ~ 1,
+                                start <= moved_to2 & direction == "L" ~ 1,
+                                start >= moved_to2 & direction == "R" ~ 1)) |>
+        mutate(check = case_when(floor(unit/100) > 0 ~ check * floor(unit/100), TRUE ~ check))
+
+puzzle2 |> summarise(min(moved_to2), max(moved_to2))
+
+puzzle2 |> select(direction, unit, start, moved_to2, check) |> View()
+
+password <- puzzle2 |> summarise(sum(check, na.rm=T))
+password
+```

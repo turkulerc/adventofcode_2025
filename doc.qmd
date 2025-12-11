@@ -148,5 +148,49 @@ password
 ### TEST
 
 ```{r}
+test1 <- read_lines(here("day2_test1.txt")) |>
+        as_tibble() |>
+        separate_longer_delim(value, ",") |>
+        separate_wider_delim(value, delim = "-", names = c("start", "end"))
 
+df <- test1
+
+invalid_sum <- 0
+for (i in 1:nrow(df)){
+        numbers <- as.numeric(df$start[i]):as.numeric(df$end[i])
+        for (j in 1:length(numbers)){
+        if (floor(str_length(numbers[j])/2) == str_length(numbers[j])/2){
+                if(str_sub(numbers[j],1,str_length(numbers[j])/2) == str_sub(numbers[j], str_length(numbers[j])/2 + 1, str_length(numbers[j]))){
+                        invalid_sum <- invalid_sum + numbers[j]
+                }
+        }  
+}
+
+}
+invalid_sum
+```
+
+### PUZZLE
+
+```{r}
+puzzle1 <- read_lines(here("day2_puzzle1.txt")) |>
+        as_tibble() |>
+        separate_longer_delim(value, ",") |>
+        separate_wider_delim(value, delim = "-", names = c("start", "end"))
+
+df <- puzzle1
+
+invalid_sum <- 0
+for (i in 1:nrow(df)){
+        numbers <- as.numeric(df$start[i]):as.numeric(df$end[i])
+        for (j in 1:length(numbers)){
+        if (floor(str_length(numbers[j])/2) == str_length(numbers[j])/2){
+                if(str_sub(numbers[j],1,str_length(numbers[j])/2) == str_sub(numbers[j], str_length(numbers[j])/2 + 1, str_length(numbers[j]))){
+                        invalid_sum <- invalid_sum + numbers[j]
+                }
+        }  
+}
+
+}
+invalid_sum
 ```

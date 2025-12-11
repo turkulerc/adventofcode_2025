@@ -15,7 +15,7 @@ library(tidyverse)
 ### TEST
 
 ```{r}
-test1 <- read_lines(here("day1_test1")) |> 
+df <- read_lines(here("day1_df.txt")) |> 
         as_tibble() |> 
         separate_wider_position(value, c(direction = 1, unit = 2), too_few = "align_start") |>
         mutate(unit = as.numeric(unit)) |>
@@ -25,13 +25,13 @@ test1 <- read_lines(here("day1_test1")) |>
         mutate(moved_to2 = case_when(moved_to < 0 ~ as.numeric(str_sub(moved_to + 100, -2)), 
                                         moved_to > 100 ~ as.numeric(str_sub(moved_to, -2)), TRUE ~ moved_to))
 
-password <- test1 |> filter(moved_to2 == 0) |> nrow()
+password <- df |> filter(moved_to2 == 0) |> nrow()
 ```
 
 ### PUZZLE
 
 ```{r}
-puzzle1 <- read_lines(here("day1_puzzle1")) |> 
+puzzle1 <- read_lines(here("day1_puzzle1.txt")) |> 
         as_tibble() |> 
         separate_wider_position(value, c(direction = 1, unit = 5), too_few = "align_start") |>
         mutate(unit = as.numeric(unit)) |>
@@ -51,53 +51,102 @@ password <- puzzle1 |> filter(moved_to2 == 0) |> nrow()
 ### TEST
 
 ```{r}
-test1 <- read_lines(here("day1_test1")) |> 
+test1 <- read_lines(here("day1_test1.txt")) |> 
         as_tibble() |> 
-        separate_wider_position(value, c(direction = 1, unit = 2), too_few = "align_start") |>
+        separate_wider_position(value, c(direction = 1, unit = 3), too_few = "align_start") |>
         mutate(unit = as.numeric(unit)) |>
-        mutate(move = case_when(direction == "L" ~ -unit,
-                                    TRUE ~ unit)) |>
-        mutate(moved_to = 50 + cumsum(move)) |>
-        mutate(moved_to2 = case_when(moved_to < 0 ~ as.numeric(str_sub(moved_to + 100, -2)), 
-                                        moved_to > 100 ~ as.numeric(str_sub(moved_to, -2)), TRUE ~ moved_to)) |>
-        mutate(start = case_when(row_number() == 1 ~50, TRUE ~lag(moved_to2))) |>
-        mutate(check = case_when(start <= moved_to2 & direction == "R" & unit > 50 & row_number() == 1 ~ 1,
-                                start <= moved_to2 & direction == "R" & unit > 100 ~ 1,
-                                start >= moved_to2 & direction == "L" & unit > 50 & row_number() == 1 ~ 1,
-                                start >= moved_to2 & direction == "L" & unit > 100 ~ 1,
-                                start <= moved_to2 & direction == "L" ~ 1,
-                                start >= moved_to2 & direction == "R" ~ 1))
+        mutate(start = if_else(row_number() == 1, 50, NA), check = 0, end=NA, factor = 1)
 
-password <- test1 |> filter(check == 1) |> nrow()
+df <- test1
+
+for (i in 1:nrow(df)){
+
+        if (df$unit[i] >= 100){
+                df$factor[i] <- floor(df$unit[i]/100)
+                df$unit[i] <- df$unit[i] - 100 * df$factor[i]
+                df$check[i] <- df$factor[i]
+        }
+        if(df$direction[i] == "R" & df$start[i]  + df$unit[i]  < 100){
+                df$end[i] <- df$start[i]  + df$unit[i] 
+        } else if (df$direction[i] == "R" & df$start[i]  + df$unit[i]  >= 100){
+                df$end[i] <- df$start[i]  + df$unit[i] -  100
+                df$check[i] <- df$check[i] + 1 
+        } else if (df$direction[i] == "L" & df$start[i] - df$unit[i]  < 0 ){
+                df$end[i] <- 100 + (df$start[i] - df$unit[i])
+                if (df$start[i] != 0){
+                 df$check[i] <- df$check[i] + 1
+                }
+        } else if (df$direction[i] == "L" &  df$start[i] - df$unit[i]  > 0){
+                df$end[i] <- df$start[i] - df$unit[i]
+        } else if (df$direction[i] == "L" &  df$start[i] - df$unit[i]  == 0){
+                df$end[i] <- df$start[i] - df$unit[i]
+                if (df$start[i] != 0){
+                 df$check[i] <- df$check[i] + 1
+                }
+        }
+        df$start[i+1] <- df$end[i]
+}
+
+
+df
+
+password <- df |> filter(check == 1) |> nrow()
+password
 ```
 
 ### PUZZLE
 
 ```{r}
-puzzle2 <- read_lines(here("day1_puzzle1")) |> 
+puzzle2 <- read_lines(here("day1_puzzle1.txt")) |> 
         as_tibble() |> 
-        separate_wider_position(value, c(direction = 1, unit = 5), too_few = "align_start") |>
+        separate_wider_position(value, c(direction = 1, unit = 3), too_few = "align_start") |>
         mutate(unit = as.numeric(unit)) |>
-        mutate(move = case_when(direction == "L" ~ -unit,
-                                    TRUE ~ unit)) |>
-        mutate(moved_to = 50 + cumsum(move)) |>
-        mutate(moved_to = case_when(moved_to == 100 ~ 0, TRUE ~ moved_to)) |>
-        mutate(moved_to2 = case_when(moved_to < 0 ~ as.numeric(str_sub(moved_to + 100, -2)), 
-                                        moved_to > 100 ~ 100 - as.numeric(str_sub(moved_to, -2)), TRUE ~ moved_to))|>
-        mutate(moved_to2 = case_when(moved_to2 == 100 ~ 0, TRUE ~ moved_to2)) |>
-        mutate(start = case_when(row_number() == 1 ~ 50, TRUE ~lag(moved_to2))) |>
-        mutate(check = case_when(start <= moved_to2 & direction == "R" & unit >= 50 & row_number() == 1 ~ 1,
-                                start <= moved_to2 & direction == "R" & unit >= 100 ~ 1,
-                                start >= moved_to2 & direction == "L" & unit >= 50 & row_number() == 1 ~ 1,
-                                start >= moved_to2 & direction == "L" & unit >= 100 ~ 1,
-                                start <= moved_to2 & direction == "L" ~ 1,
-                                start >= moved_to2 & direction == "R" ~ 1)) |>
-        mutate(check = case_when(floor(unit/100) > 0 ~ check * floor(unit/100), TRUE ~ check))
+        mutate(start = if_else(row_number() == 1, 50, NA), check = 0, end=NA, factor = 1)
 
-puzzle2 |> summarise(min(moved_to2), max(moved_to2))
+puzzle2 |> View()
 
-puzzle2 |> select(direction, unit, start, moved_to2, check) |> View()
+df <- puzzle2
+        
+for (i in 1:nrow(df)){
 
-password <- puzzle2 |> summarise(sum(check, na.rm=T))
+        if (df$unit[i] >= 100){
+                df$factor[i] <- floor(df$unit[i]/100)
+                df$unit[i] <- df$unit[i] - 100 * df$factor[i]
+                df$check[i] <- df$factor[i]
+        }
+        if(df$direction[i] == "R" & df$start[i]  + df$unit[i]  < 100){
+                df$end[i] <- df$start[i]  + df$unit[i] 
+        } else if (df$direction[i] == "R" & df$start[i]  + df$unit[i]  >= 100){
+                df$end[i] <- df$start[i]  + df$unit[i] -  100
+                df$check[i] <- df$check[i] + 1 
+        } else if (df$direction[i] == "L" & df$start[i] - df$unit[i]  < 0 ){
+                df$end[i] <- 100 + (df$start[i] - df$unit[i])
+                if (df$start[i] != 0){
+                 df$check[i] <- df$check[i] + 1
+                }
+        } else if (df$direction[i] == "L" &  df$start[i] - df$unit[i]  > 0){
+                df$end[i] <- df$start[i] - df$unit[i]
+        } else if (df$direction[i] == "L" &  df$start[i] - df$unit[i]  == 0){
+                df$end[i] <- df$start[i] - df$unit[i]
+                if (df$start[i] != 0){
+                 df$check[i] <- df$check[i] + 1
+                }
+        }
+        df$start[i+1] <- df$end[i]
+}
+
+df |>  View()
+
+password <- df |> summarise(sum(check, na.rm=T))
 password
+```
+
+# DAY 2
+
+## PUZZLE 1
+
+### TEST
+
+```{r}
+
 ```

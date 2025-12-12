@@ -319,3 +319,57 @@ for (i in 1:nrow(df)){
 invalid_sum
 
 ```
+
+# DAY 3
+
+## PUZZLE 1
+
+### TEST
+
+
+```{r}
+test1 <- read_lines(here("day3_test1.txt")) |>
+        as_tibble() 
+
+df <- test1
+sum_num <- 0
+
+for (i in 1:nrow(df)){
+        len_num <- str_length(as.character(df$value[i]))
+        max1 <- max(as.numeric(str_extract_all(df$value[i], "") |> unlist()))
+        maxloc1 <- str_locate(as.character(df$value[i]), as.character(max1))[1,1]
+        if (maxloc1 == len_num){
+                new_num <- str_replace(df$value[i], as.character(max1), "0")
+                max1 <- max(as.numeric(str_extract_all(new_num, "") |> unlist()))
+                maxloc1 <- str_locate(as.character(new_num), as.character(max1))[1,1]
+        }
+        new_series <- str_sub(df$value[i], maxloc1 + 1, len_num)
+        max2 <- max(as.numeric(str_extract_all(new_series, "") |> unlist()))
+        print(as.numeric(paste0(max1, max2)))
+        sum_num <- sum_num + as.numeric(paste0(max1, max2))
+}
+```
+
+### PUZZLE
+
+
+```{r}
+puzzle1 <- read_lines(here("day3_puzzle1.txt")) |>
+        as_tibble() 
+
+df <- puzzle1
+
+for (i in 1:nrow(df)){
+        len_num <- str_length(as.character(df$value[i]))
+        max1 <- max(as.numeric(str_extract_all(df$value[i], "") |> unlist()))
+        maxloc1 <- str_locate(as.character(df$value[i]), as.character(max1))[1,1]
+        if (maxloc1 == len_num){
+                new_num <- str_replace(df$value[i], as.character(max1), "0")
+                max1 <- max(as.numeric(str_extract_all(new_num, "") |> unlist()))
+                maxloc1 <- str_locate(as.character(new_num), as.character(max1))[1,1]
+        }
+        new_series <- str_sub(df$value[i], maxloc1 + 1, len_num)
+        max2 <- max(as.numeric(str_extract_all(new_series, "") |> unlist()))
+        print(as.numeric(paste0(max1, max2)))
+}
+```

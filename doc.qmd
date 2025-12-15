@@ -348,6 +348,8 @@ for (i in 1:nrow(df)){
         print(as.numeric(paste0(max1, max2)))
         sum_num <- sum_num + as.numeric(paste0(max1, max2))
 }
+
+sum_num
 ```
 
 ### PUZZLE
@@ -358,6 +360,8 @@ puzzle1 <- read_lines(here("day3_puzzle1.txt")) |>
         as_tibble() 
 
 df <- puzzle1
+
+sum_num <- 0
 
 for (i in 1:nrow(df)){
         len_num <- str_length(as.character(df$value[i]))
@@ -371,5 +375,64 @@ for (i in 1:nrow(df)){
         new_series <- str_sub(df$value[i], maxloc1 + 1, len_num)
         max2 <- max(as.numeric(str_extract_all(new_series, "") |> unlist()))
         print(as.numeric(paste0(max1, max2)))
+        sum_num <- sum_num + as.numeric(paste0(max1, max2))
 }
+
+sum_num
+```
+
+## PUZZLE 2
+
+### TEST
+
+```{r}
+df <- test1
+sum_num <- 0
+digit <- 12
+num <- ""
+
+for (i in 1:nrow(df)){
+        len_num <- str_length(as.character(df$value[i]))
+        series <- df$value[i]
+        maxloc1 <- 1
+        for (j in 1:12){
+                max1 <- max(as.numeric(str_extract_all(str_sub(series, maxloc1, len_num-digit+j), "") |> unlist()))
+                maxloc1 <- str_locate(as.character(series), as.character(max1))[1,1]
+                new_series <- str_c(paste0(rep("0", maxloc1), collapse=""), str_sub(as.character(series), maxloc1+1, len_num))
+                num <- paste0(num, as.character(max1))
+                series <- new_series
+        }
+        print(num)
+        sum_num <- sum_num + as.numeric(num)
+        num <- ""
+}
+
+as.character(sum_num)
+```
+
+### PUZZLE
+
+```{r}
+df <- puzzle1
+sum_num <- 0
+digit <- 12
+num <- ""
+
+for (i in 1:nrow(df)){
+        len_num <- str_length(as.character(df$value[i]))
+        series <- df$value[i]
+        maxloc1 <- 1
+        for (j in 1:12){
+                max1 <- max(as.numeric(str_extract_all(str_sub(series, maxloc1, len_num-digit+j), "") |> unlist()))
+                maxloc1 <- str_locate(as.character(series), as.character(max1))[1,1]
+                new_series <- str_c(paste0(rep("0", maxloc1), collapse=""), str_sub(as.character(series), maxloc1+1, len_num))
+                num <- paste0(num, as.character(max1))
+                series <- new_series
+        }
+        print(num)
+        sum_num <- sum_num + as.numeric(num)
+        num <- ""
+}
+
+as.character(sum_num)
 ```

@@ -436,3 +436,61 @@ for (i in 1:nrow(df)){
 
 as.character(sum_num)
 ```
+
+# DAY 4
+
+## PUZZLE 1
+
+### TEST & PUZZLE
+
+
+```{r}
+test <- read_lines(here("day4_test.txt")) |>
+        as_tibble()  |>
+        mutate(value = str_replace_all(value, "@", "1")) |>
+        mutate(value = str_replace_all(value, "\\.", "0"))
+
+puzzle <- read_lines(here("day4_puzzle.txt")) |>
+        as_tibble()  |>
+        mutate(value = str_replace_all(value, "@", "1")) |>
+        mutate(value = str_replace_all(value, "\\.", "0"))
+
+df <- puzzle
+str_len <- str_length(df$value[1])    
+
+df <- df  |>
+        rowwise() |>
+        mutate(value = str_extract_all(value, "") |> unlist() |> paste0(collapse="-")) |>
+        separate_wider_delim(value, "-", names = paste0("value", 1:str_len)) |>
+        mutate(across(where(is.character), ~as.numeric(.x)))
+
+n_roll <- 0
+
+for (i in 1:nrow(df)){
+        for (j in 1:ncol(df)){
+                if (i == 1 & j == 1 | i == nrow(df) & j == 1 | i == 1 & j == ncol(df) | i == nrow(df) & j == ncol(df)){ # corners
+                        n_roll <- n_roll + df[i,j]
+                } else if (i == 1){
+                        if(sum(df[i,j-1], df[i+1,j-1], df[i+1,j], df[i,j+1], df[i+1,j+1]) < 4){ # 1st row
+                        n_roll <- n_roll + df[i,j]
+                        }
+                } else if (j == 1){
+                        if(sum(df[i-1,j], df[i-1,j+1], df[i,j+1], df[i+1,j+1], df[i+1,j]) < 4) { # 1st column
+                        n_roll <- n_roll + df[i,j]
+                        }
+                } else if (i == nrow(df)){
+                        if(sum(df[i,j-1], df[i-1,j-1], df[i-1,j], df[i-1,j+1], df[i,j+1]) < 4) { # last row
+                        n_roll <- n_roll + df[i,j]
+                        }
+                } else if (j == ncol(df)){
+                        if(sum(df[i-1,j], df[i-1,j-1], df[i,j-1], df[i+1,j-1], df[i+1,j]) < 4) { # last column
+                        n_roll <- n_roll + df[i,j]
+                        }
+                } else if (sum(df[i-1,j-1], df[i-1,j], df[i-1,j+1], df[i,j-1], df[i,j+1], df[i+1,j-1], df[i+1,j], df[i+1,j+1]) < 4){
+                        n_roll <- n_roll + df[i,j]
+                }
+        }
+}
+n_roll
+```
+

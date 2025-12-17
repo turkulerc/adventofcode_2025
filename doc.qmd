@@ -499,7 +499,7 @@ n_roll
 ### TEST & PUZZLE
 
 ```{r}
-df <- test
+df <- puzzle
 str_len <- str_length(df$value[1])    
 
 df <- df  |>
@@ -549,5 +549,36 @@ while(n_roll != n_roll_pre & n_roll != 0){
         print(n_roll)
 }
 
-n_roll
+n_roll - 0.1
+```
+
+# DAY 5
+
+## PUZZLE 1 
+
+
+```{r}
+
+solve_day5 <- function(filename){
+        empty_line <- system(paste0("awk '! NF { print NR; exit }' ", filename), intern = TRUE) |> as.numeric()
+        part1 <- read_lines(here(filename), n_max = empty_line-1) |> as_tibble()
+        part2 <- read_lines(here(filename), skip = empty_line) |> as_tibble()
+        amount <- 0
+        for (j in 1:nrow(part2)){
+                for (i in 1:nrow(part1)){
+                        num_range_start <- as.numeric(str_split(part1$value[i], "-")[[1]][1])
+                        num_range_end <- as.numeric(str_split(part1$value[i], "-")[[1]][2])
+                        if (as.numeric(part2$value[j]) >= num_range_start & as.numeric(part2$value[j]) <= num_range_end){
+                                amount <- amount + 1
+                                break
+                        }
+                }
+        }
+        return(amount)
+}
+
+filename <- "day5_test.txt"
+filename <- "day5_puzzle.txt"
+solve_day5(filename)
+
 ```
